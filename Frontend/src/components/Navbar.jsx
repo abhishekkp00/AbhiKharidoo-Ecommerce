@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { AppContext } from "../context/Context";
 
 const Navbar = () => {
+  const { cart } = useContext(AppContext);
   const getInitialTheme = () => {
     const storedTheme = localStorage.getItem("theme");
     return storedTheme ? storedTheme : "light-theme";
@@ -23,9 +26,9 @@ const Navbar = () => {
       <header>
         <nav className="navbar navbar-expand-lg fixed-top">
           <div className="container-fluid">
-            <a className="navbar-brand" href="/">
+            <Link className="navbar-brand" to="/">
               AbhiKharidoo
-            </a>
+            </Link>
             <button
               className="navbar-toggler"
               type="button"
@@ -43,28 +46,20 @@ const Navbar = () => {
             >
               <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                 <li className="nav-item">
-                  <a className="nav-link active" aria-current="page" href="/">
+                  <Link className="nav-link active" aria-current="page" to="/">
                     Home
-                  </a>
+                  </Link>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="/add_product">
+                  <Link className="nav-link" to="/add_product">
                     Add Product
-                  </a>
+                  </Link>
                 </li>
-
-                {/* < className="nav-item dropdown"> */}
-                <a
-                  className="nav-link dropdown-toggle"
-                  href="/"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  Categories
-                </a>
-
-                <li className="nav-item"></li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/cart">
+                    Cart ({cart.length})
+                  </Link>
+                </li>
               </ul>
               <button className="theme-btn" onClick={() => toggleTheme()}>
                 {theme === "dark-theme" ? (
@@ -74,14 +69,12 @@ const Navbar = () => {
                 )}
               </button>
               <div className="d-flex align-items-center cart">
-                {/* <a href="/cart" className="nav-link text-dark"> */}
                 <i
                   className="bi bi-cart me-2"
                   style={{ display: "flex", alignItems: "center" }}
                 >
                   Cart
                 </i>
-                {/* </a> */}
 
                 <input
                   className="form-control me-2"
@@ -89,7 +82,6 @@ const Navbar = () => {
                   placeholder="Search"
                   aria-label="Search"
                 />
-                <div />
               </div>
             </div>
           </div>

@@ -1,29 +1,30 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useContext } from "react";
+import { Link } from "react-router-dom";
+import { AppContext } from "../context/Context";
 
 const Home = () => {
-  const [products, setProducts] = useState([]);
-  const [isError, setIsError] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:8080/api/products");
-        setProducts(response.data);
-        console.log(response.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setIsError(true);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const { data: products, addToCart, isError, isLoading } = useContext(AppContext);
 
   if (isError) {
     return (
       <h2 className="text-center" style={{ padding: "10rem" }}>
         Something went wrong...
+      </h2>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <h2 className="text-center" style={{ padding: "10rem" }}>
+        Loading products...
+      </h2>
+    );
+  }
+
+  if (!products.length) {
+    return (
+      <h2 className="text-center" style={{ padding: "10rem" }}>
+        No products found.
       </h2>
     );
   }
@@ -86,12 +87,22 @@ const Home = () => {
                   {product.price}
                 </h5>
               </div>
-              <button
-                className="btn-hover color-9"
-                style={{ margin: "10px 25px 0px " }}
-              >
-                Add To Cart
-              </button>
+              <div style={{ display: "flex", gap: "0.5rem", marginTop: "auto" }}>
+                <button
+                  className="btn btn-primary"
+                  style={{ flex: 1 }}
+                  onClick={() => addToCart(product)}
+                >
+                  Add To Cart
+                </button>
+                <Link
+                  to={`/product/${product.id}`}
+                  className="btn btn-outline-primary"
+                  style={{ flex: 1 }}
+                >
+                  View
+                </Link>
+              </div>
             </div>
           </div>
         ))}

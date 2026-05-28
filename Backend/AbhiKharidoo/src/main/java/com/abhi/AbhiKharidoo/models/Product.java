@@ -1,5 +1,6 @@
 package com.abhi.AbhiKharidoo.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,7 +16,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class product {
+public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +27,10 @@ public class product {
     private BigDecimal price;
     private String category;
     private int stockQuantity;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-mm-yyyy")
     private Date releaseDate;
     private boolean productAvailable;
 
+    public Product(int i) {
+    }
 }
