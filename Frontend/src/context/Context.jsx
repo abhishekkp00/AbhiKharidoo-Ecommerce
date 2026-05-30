@@ -1,23 +1,21 @@
+import api from "../api";
 import { useState, useEffect, createContext } from "react";
-import API from "../api";
 
-export const AppContext = createContext({
+const AppContext = createContext({
   data: [],
   isError: "",
   cart: [],
-  isLoading: true,
   addToCart: () => {},
   removeFromCart: () => {},
-  refreshData: () => {},
-  clearCart: () => {},
-  updateStockQuantity: () => {},
+  refreshData:() =>{},
+  updateStockQuantity: () =>{}
+  
 });
 
 export const AppProvider = ({ children }) => {
   const [data, setData] = useState([]);
   const [isError, setIsError] = useState("");
   const [cart, setCart] = useState(JSON.parse(localStorage.getItem('cart')) || []);
-  const [isLoading, setIsLoading] = useState(true);
 
 
   const addToCart = (product) => {
@@ -46,14 +44,11 @@ export const AppProvider = ({ children }) => {
   };
 
   const refreshData = async () => {
-    setIsLoading(true);
     try {
-      const response = await API.get("/products");
+      const response = await api.get("/products");
       setData(response.data);
     } catch (error) {
       setIsError(error.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -70,7 +65,7 @@ export const AppProvider = ({ children }) => {
   }, [cart]);
   
   return (
-    <AppContext.Provider value={{ data, isError, cart, isLoading, addToCart, removeFromCart, refreshData, clearCart }}>
+    <AppContext.Provider value={{ data, isError, cart, addToCart, removeFromCart,refreshData, clearCart  }}>
       {children}
     </AppContext.Provider>
   );

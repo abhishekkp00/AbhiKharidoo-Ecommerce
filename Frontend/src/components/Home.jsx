@@ -1,9 +1,52 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { AppContext } from "../context/Context";
+import axios from "axios";
+import AppContext from "../context/Context";
 
-const Home = () => {
-  const { data: products, addToCart, isError, isLoading } = useContext(AppContext);
+const Home = ({ selectedCategory }) => {
+  const { data, isError, addToCart, refreshData } = useContext(AppContext);
+  const [products, setProducts] = useState([]);
+  const [isDataFetched, setIsDataFetched] = useState(false);
+
+  useEffect(() => {
+    if (!isDataFetched) {
+      refreshData();
+      setIsDataFetched(true);
+    }
+  }, [refreshData, isDataFetched]);
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      const fetchImagesAndUpdateProducts = async () => {
+        const updatedProducts = await Promise.all(
+          data.map(async (product) => {
+            try {
+              const response = await axios.get(
+                `http://localhost:8080/api/product/${product.id}/image`,
+                { responseType: "blob" }
+              );
+              const imageUrl = URL.createObjectURL(response.data);
+              return { ...product, imageUrl };
+            } catch (error) {
+              console.error(
+                "Error fetching image for product ID:",
+                product.id,
+                error
+              );
+              return { ...product, imageUrl: "placeholder-image-url" };
+            }
+          })
+        );
+        setProducts(updatedProducts);
+      };
+
+      fetchImagesAndUpdateProducts();
+    }
+  }, [data]);
+
+  const filteredProducts = selectedCategory
+    ? products.filter((product) => product.category === selectedCategory)
+    : products;
 
   if (isError) {
     return (
@@ -12,100 +55,113 @@ const Home = () => {
       </h2>
     );
   }
-
-  if (isLoading) {
-    return (
-      <h2 className="text-center" style={{ padding: "10rem" }}>
-        Loading products...
-      </h2>
-    );
-  }
-
-  if (!products.length) {
-    return (
-      <h2 className="text-center" style={{ padding: "10rem" }}>
-        No products found.
-      </h2>
-    );
-  }
-
   return (
     <>
       <div className="grid">
-        {products.map((product) => (
-          <div
-            className="card mb-3"
-            key={product.id}
+        {filteredProducts.length === 0 ? (
+          <h2
+            className="text-center"
             style={{
-              width: "270px",
-              height: "210px",
-              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-              borderRadius: "10px",
-              overflow: "hidden",
-
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-start",
-              alignItems: "stretch",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            <div
-              className="card-body"
-              style={{
-                flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                padding: "10px",
-              }}
-            >
-              <div>
-                <h5
-                  className="card-title"
-                  style={{ margin: "0 0 10px 0", fontSize: "1.2rem" }}
-                >
-                  {product.name.toUpperCase()}
-                </h5>
-                <i
-                  className="card-brand"
-                  style={{ fontStyle: "italic", fontSize: "0.8rem" }}
-                >
-                  {"by " + product.brand}
-                </i>
-              </div>
-              <hr className="hr-line" style={{ margin: "10px 0" }} />
-              <div className="home-cart-price">
-                <h5
-                  className="card-text"
-                  style={{
-                    fontWeight: "600",
-                    fontSize: "1.1rem",
-                    marginBottom: "5px",
-                  }}
-                >
-                  <i className="bi bi-currency-rupee"></i>
-                  {product.price}
-                </h5>
-              </div>
-              <div style={{ display: "flex", gap: "0.5rem", marginTop: "auto" }}>
-                <button
-                  className="btn btn-primary"
-                  style={{ flex: 1 }}
-                  onClick={() => addToCart(product)}
-                >
-                  Add To Cart
-                </button>
+            No Products Available
+          </h2>
+        ) : (
+          filteredProducts.map((product) => {
+            const { id, brand, name, price, productAvailable, imageUrl } =
+              product;
+            return (
+              <div
+                className="card mb-3"
+                style={{
+                  width: "18rem",
+                  height: "24rem",
+                  boxShadow: "rgba(0, 0, 0, 0.24) 0px 2px 3px",
+                  backgroundColor: productAvailable ? "#fff" : "#ccc",
+                  margin: "10px",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+                key={id}
+              >
                 <Link
-                  to={`/product/${product.id}`}
-                  className="btn btn-outline-primary"
-                  style={{ flex: 1 }}
+                  to={`/product/${id}`}
+                  style={{ textDecoration: "none", color: "inherit" }}
                 >
-                  View
+                  <img
+                    src={imageUrl}
+                    alt={name}
+                    style={{
+                      width: "100%",
+                      height: "180px",
+                      objectFit: "cover",
+                      padding: "5px",
+                      margin: "0",
+                    }}
+                  />
+                  <div
+                    className="buttons"
+                    style={{
+                      position: "absolute",
+                      top: "25px",
+                      left: "220px",
+                      zIndex: "1",
+                      
+                    }}
+                  >
+                    <div className="buttons-liked">
+                      <i className="bi bi-heart"></i>
+                    </div>
+                  </div>
+                  <div
+                    className="card-body"
+                    style={{
+                      flexGrow: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      padding: "10px",
+                    }}
+                  >
+                    <div>
+                      <h5
+                        className="card-title"
+                        style={{ margin: "0 0 10px 0" }}
+                      >
+                        {name.toUpperCase()}
+                      </h5>
+                      <i className="card-brand" style={{ fontStyle: "italic" }}>
+                        {"~ " + brand}
+                      </i>
+                    </div>
+                    <div>
+                      <h5
+                        className="card-text"
+                        style={{ fontWeight: "600", margin: "5px 0" }}
+                      >
+                        {"$" + price}
+                      </h5>
+                      <button
+                        className="btn btn-primary"
+                        style={{ width: "100%" }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addToCart(product);
+                        }}
+                        disabled={!productAvailable}
+                      >
+                        {productAvailable ? "Add to Cart" : "Out of Stock"}
+                      </button>
+                    </div>
+                  </div>
                 </Link>
               </div>
-            </div>
-          </div>
-        ))}
+            );
+          })
+        )}
       </div>
     </>
   );

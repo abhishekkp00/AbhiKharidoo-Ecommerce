@@ -1,30 +1,48 @@
 import { useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import API from "../api";
-import { AppContext } from "../context/Context";
-
+import AppContext from "../context/Context";
+import api from "../api";
+// import UpdateProduct from "./UpdateProduct";
 const Product = () => {
   const { id } = useParams();
-  const { addToCart } = useContext(AppContext);
+  const { addToCart } =
+    useContext(AppContext);
   const [product, setProduct] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await API.get(`/products/${id}`);
+        const response = await api.get(`/product/${id}`);
         setProduct(response.data);
+        if (response.data.imageName) {
+          fetchImage();
+        }
       } catch (error) {
         console.error("Error fetching product:", error);
-        setError("Unable to load product details.");
+        setError("Product not found or server unavailable.");
+      }
+    };
+
+    const fetchImage = async () => {
+      try {
+        const response = await api.get(`/product/${id}/image`, {
+          responseType: "blob",
+        });
+        setImageUrl(URL.createObjectURL(response.data));
+      } catch (error) {
+        console.error("Error fetching product image:", error);
       }
     };
 
     fetchProduct();
   }, [id]);
 
-  const isAvailable = product?.available ?? product?.productAvailable ?? true;
-
+  const handlAddToCart = () => {
+    addToCart(product);
+    alert("Product added to cart");
+  };
   if (error) {
     return (
       <h2 className="text-center" style={{ padding: "10rem" }}>
@@ -32,7 +50,6 @@ const Product = () => {
       </h2>
     );
   }
-
   if (!product) {
     return (
       <h2 className="text-center" style={{ padding: "10rem" }}>
@@ -40,18 +57,15 @@ const Product = () => {
       </h2>
     );
   }
-
   return (
     <>
       <div className="containers">
-        <div className="left-column" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <img
-            src={product.imageUrl || product.image || "https://via.placeholder.com/500x500?text=Product"}
-            alt={product.name}
-            className="left-column-img"
-            style={{ objectFit: "cover" }}
-          />
-        </div>
+        <img
+          className="left-column-img"
+          src={imageUrl}
+          alt={product.imageName}
+        />
+
         <div className="right-column">
           <div className="product-description">
             <span>{product.category}</span>
@@ -63,11 +77,13 @@ const Product = () => {
           <div className="product-price">
             <span>{"$" + product.price}</span>
             <button
-              className={`cart-btn ${!isAvailable ? "disabled-btn" : ""}`}
-              disabled={!isAvailable}
-              onClick={() => addToCart(product)}
+              className={`cart-btn ${
+                !product.productAvailable ? "disabled-btn" : ""
+              }`}
+              onClick={handlAddToCart}
+              disabled={!product.productAvailable}
             >
-              {isAvailable ? "Add to cart" : "Out of Stock"}
+              {product.productAvailable ? "Add to cart" : "Out of Stock"}
             </button>
             <h6>
               Stock Available :{" "}
@@ -77,14 +93,14 @@ const Product = () => {
             </h6>
             <p className="release-date">
               <h6>Product listed on:</h6>
-              <i>{product.releaseDate}</i>
+              <i> {new Date(product.releaseDate).toLocaleDateString()}</i>
             </p>
           </div>
-          <div className="update-button ">
+          {/* <div className="update-button ">
             <button
               className="btn btn-primary"
               type="button"
-          
+              onClick={handleEditClick}
             >
               Update
             </button>
@@ -92,10 +108,11 @@ const Product = () => {
             <button
               className="btn btn-primary"
               type="button"
+              onClick={deleteProduct}
             >
               Delete
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

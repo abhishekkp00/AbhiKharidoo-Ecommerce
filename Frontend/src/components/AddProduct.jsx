@@ -1,7 +1,8 @@
 import { useState } from "react";
+import axios from "axios";
 
 const AddProduct = () => {
-  const [formData, setFormData] = useState({
+  const [product, setProduct] = useState({
     name: "",
     brand: "",
     description: "",
@@ -9,231 +10,192 @@ const AddProduct = () => {
     category: "",
     stockQuantity: "",
     releaseDate: "",
-    image: null,
-    available: true,
+    productAvailable: false,
   });
+  const [image, setImage] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : type === "file" ? files[0] : value,
-    });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProduct({ ...product, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Add API call here to submit to backend
-    alert("Product added successfully!");
-    setFormData({
-      name: "",
-      brand: "",
-      description: "",
-      price: "",
-      category: "",
-      stockQuantity: "",
-      releaseDate: "",
-      image: null,
-      available: true,
-    });
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+    // setProduct({...product, image: e.target.files[0]})
+  };
+
+  const submitHandler = (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append("imageFile", image);
+    formData.append(
+      "product",
+      new Blob([JSON.stringify(product)], { type: "application/json" })
+    );
+
+    axios
+      .post("http://localhost:8080/api/product", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        console.log("Product added successfully:", response.data);
+        alert("Product added successfully");
+      })
+      .catch((error) => {
+        console.error("Error adding product:", error);
+        alert("Error adding product");
+      });
   };
 
   return (
-    <div style={{ padding: "6rem 2rem 2rem", maxWidth: "1200px", margin: "0 auto" }}>
-      <h2 style={{ marginBottom: "2rem", color: "white" }}>Add Product</h2>
-      <form onSubmit={handleSubmit} style={{ color: "white" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>Name</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Product Name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
-              }}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>Brand</label>
-            <input
-              type="text"
-              name="brand"
-              placeholder="Enter your Brand"
-              value={formData.brand}
-              onChange={handleChange}
-              required
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
-              }}
-            />
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>Description</label>
-          <textarea
-            name="description"
-            placeholder="Add product description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            rows="4"
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              borderRadius: "0.5rem",
-              border: "1px solid #ccc",
-              fontSize: "1rem",
-              fontFamily: "inherit",
-            }}
+    <div className="container">
+    <div className="center-container">
+      <form className="row g-3 pt-5" onSubmit={submitHandler}>
+        <div className="col-md-6">
+          <label className="form-label">
+            <h6>Name</h6>
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Product Name"
+            onChange={handleInputChange}
+            value={product.name}
+            name="name"
           />
         </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>Price</label>
-            <input
-              type="number"
-              name="price"
-              placeholder="Eg: $1000"
-              value={formData.price}
-              onChange={handleChange}
-              required
-              step="0.01"
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
-              }}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>Category</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              required
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
-              }}
-            >
-              <option value="">Select category</option>
-              <option value="electronics">Electronics</option>
-              <option value="clothing">Clothing</option>
-              <option value="books">Books</option>
-              <option value="home">Home & Garden</option>
-              <option value="sports">Sports</option>
-            </select>
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>Stock Quantity</label>
-            <input
-              type="number"
-              name="stockQuantity"
-              placeholder="Stock Remaining"
-              value={formData.stockQuantity}
-              onChange={handleChange}
-              required
-              min="0"
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
-              }}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>Release Date</label>
-            <input
-              type="date"
-              name="releaseDate"
-              value={formData.releaseDate}
-              onChange={handleChange}
-              required
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
-              }}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "500" }}>Image</label>
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleChange}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #ccc",
-                fontSize: "1rem",
-              }}
-            />
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "2rem" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: "500" }}>
-            <input
-              type="checkbox"
-              name="available"
-              checked={formData.available}
-              onChange={handleChange}
-              style={{ width: "1.2rem", height: "1.2rem", cursor: "pointer" }}
-            />
-            Product Available
+        <div className="col-md-6">
+          <label className="form-label">
+            <h6>Brand</h6>
           </label>
+          <input
+            type="text"
+            name="brand"
+            className="form-control"
+            placeholder="Enter your Brand"
+            value={product.brand}
+            onChange={handleInputChange}
+            id="brand"
+          />
+        </div>
+        <div className="col-12">
+          <label className="form-label">
+            <h6>Description</h6>
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Add product description"
+            value={product.description}
+            name="description"
+            onChange={handleInputChange}
+            id="description"
+          />
+        </div>
+        <div className="col-5">
+          <label className="form-label">
+            <h6>Price</h6>
+          </label>
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Eg: $1000"
+            onChange={handleInputChange}
+            value={product.price}
+            name="price"
+            id="price"
+          />
+        </div>
+     
+           <div className="col-md-6">
+          <label className="form-label">
+            <h6>Category</h6>
+          </label>
+          <select
+            className="form-select"
+            value={product.category}
+            onChange={handleInputChange}
+            name="category"
+            id="category"
+          >
+            <option value="">Select category</option>
+            <option value="Laptop">Laptop</option>
+            <option value="Headphone">Headphone</option>
+            <option value="Mobile">Mobile</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Toys">Toys</option>
+            <option value="Fashion">Fashion</option>
+          </select>
         </div>
 
-        <button
-          type="submit"
-          style={{
-            padding: "0.75rem 2rem",
-            backgroundColor: "#0d6efd",
-            color: "white",
-            border: "none",
-            borderRadius: "0.5rem",
-            fontSize: "1rem",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "background-color 0.3s",
-          }}
-          onMouseOver={(e) => (e.target.style.backgroundColor = "#0b5ed7")}
-          onMouseOut={(e) => (e.target.style.backgroundColor = "#0d6efd")}
-        >
-          Submit
-        </button>
+        <div className="col-md-4">
+          <label className="form-label">
+            <h6>Stock Quantity</h6>
+          </label>
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Stock Remaining"
+            onChange={handleInputChange}
+            value={product.stockQuantity}
+            name="stockQuantity"
+            // value={`${stockAlert}/${stockQuantity}`}
+            id="stockQuantity"
+          />
+        </div>
+        <div className="col-md-4">
+          <label className="form-label">
+            <h6>Release Date</h6>
+          </label>
+          <input
+            type="date"
+            className="form-control"
+            value={product.releaseDate}
+            name="releaseDate"
+            onChange={handleInputChange}
+            id="releaseDate"
+          />
+        </div>
+        {/* <input className='image-control' type="file" name='file' onChange={(e) => setProduct({...product, image: e.target.files[0]})} />
+    <button className="btn btn-primary" >Add Photo</button>  */}
+        <div className="col-md-4">
+          <label className="form-label">
+            <h6>Image</h6>
+          </label>
+          <input
+            className="form-control"
+            type="file"
+            onChange={handleImageChange}
+          />
+        </div>
+        <div className="col-12">
+          <div className="form-check">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              name="productAvailable"
+              id="gridCheck"
+              checked={product.productAvailable}
+              onChange={(e) =>
+                setProduct({ ...product, productAvailable: e.target.checked })
+              }
+            />
+            <label className="form-check-label">Product Available</label>
+          </div>
+        </div>
+        <div className="col-12">
+          <button
+            type="submit"
+            className="btn btn-primary"
+            // onClick={submitHandler}
+          >
+            Submit
+          </button>
+        </div>
       </form>
+    </div>
     </div>
   );
 };
