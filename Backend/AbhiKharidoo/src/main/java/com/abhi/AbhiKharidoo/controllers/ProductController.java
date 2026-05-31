@@ -39,6 +39,7 @@ public class ProductController {
 
     }
 
+    @RequestMapping("/product")
     public ResponseEntity<?> addProduct(@RequestParam Product product, @RequestParam MultipartFile image){
         Product savedProduct = null;
         try {
