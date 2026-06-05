@@ -1,8 +1,7 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import AppContext from "../context/Context";
 import api from "../api";
-// import UpdateProduct from "./UpdateProduct";
 const Product = () => {
   const { id } = useParams();
   const { addToCart } =
@@ -96,23 +95,14 @@ const Product = () => {
               <i> {new Date(product.releaseDate).toLocaleDateString()}</i>
             </p>
           </div>
-          {/* <div className="update-button ">
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={handleEditClick}
-            >
+          <div className="update-button" style={{ marginTop: "1rem", display: "flex", gap: "10px" }}>
+            <Link to={`/product/update/${id}`} className="btn btn-warning">
               Update
-            </button>
-        
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={deleteProduct}
-            >
+            </Link>
+            <Link to={`/product/delete/${id}`} className="btn btn-danger">
               Delete
-            </button>
-          </div> */}
+            </Link>
+          </div>
         </div>
       </div>
     </>

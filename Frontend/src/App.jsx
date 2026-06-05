@@ -5,6 +5,9 @@ import Navbar from "./components/Navbar";
 import Cart from "./components/Cart.jsx";
 import AddProduct from "./components/AddProduct";
 import Product from "./components/Product";
+import UpdateProduct from "./components/UpdateProduct";
+import DeleteProduct from "./components/DeleteProduct";
+import SearchProducts from "./components/SearchProducts";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./context/Context";
 
@@ -52,6 +55,9 @@ function App() {
           <Route path="/add_product" element={<AddProduct />} />
           <Route path="/product" element={<Product  />} />
           <Route path="product/:id" element={<Product  />} />
+          <Route path="/product/update/:id" element={<UpdateProduct />} />
+          <Route path="/product/delete/:id" element={<DeleteProduct />} />
+          <Route path="/search" element={<SearchProducts />} />
           <Route path="/cart" element={<Cart />} />
         </Routes>
       </BrowserRouter>
